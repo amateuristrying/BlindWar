@@ -1,21 +1,15 @@
 import {
-  FLEET, ORIENTS, TOTAL_TILES, createBoard, cellsFor, fits, place, pieceAt,
-  remove, remaining, isComplete, autoPlace, unitById,
+  FLEET, TOTAL_TILES, createBoard, cellsFor, firstFit, place, pieceAt,
+  remove, rotate, remaining, isComplete, autoPlace, unitById,
 } from './fleet.js';
 import {
-  missileIcon, cannonIcon, mortarIcon, tankIcon, soldierIcon, mineIcon,
-  rotateIcon, clockIcon, checkIcon, arrowLeftIcon,
+  spriteMarkup, useIcon, clockIcon, checkIcon, arrowLeftIcon,
 } from './icons.js';
 import { settings, DIFFICULTIES, COLOURS } from './match.js';
 import { myHash, nameForHash } from './search.js';
 
 /** Place your fleet inside two minutes, or the game does it for you. */
 const PLACE_SECONDS = 120;
-
-const UNIT_ICON = {
-  missile: missileIcon, cannon: cannonIcon, mortar: mortarIcon,
-  tank: tankIcon, soldier: soldierIcon, mine: mineIcon,
-};
 
 const RANKS = 'ABCDEFGHIJ';
 
@@ -24,6 +18,9 @@ export let board = null;
 
 let ticker;
 let renderToken = 0;
+/* The screen element outlives its contents, so listeners bound to it must
+   be dropped on re-render or a second match runs two sets at once. */
+let listeners;
 
 const esc = (v) =>
   String(v).replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
@@ -34,13 +31,16 @@ const unitCard = (u) => `
   <button class="unit" type="button" data-unit="${u.id}">
     <span class="unit__name">${u.name}</span>
     <span class="unit__row">
-      <span class="unit__shape">${UNIT_ICON[u.id]().repeat(u.length)}</span>
+      <span class="unit__shape">${useIcon(`u-${u.id}`).repeat(u.length)}</span>
       <span class="unit__count">&times;${u.count}</span>
     </span>
   </button>`;
 
 export function renderPlace(host) {
   clearInterval(ticker);
+  listeners?.abort();
+  listeners = new AbortController();
+  const on = (el, type, fn) => el.addEventListener(type, fn, { signal: listeners.signal });
   const token = ++renderToken;
 
   const { size } = DIFFICULTIES.find((d) => d.id === settings.difficulty) ?? { size: 8 };
@@ -50,11 +50,18 @@ export function renderPlace(host) {
   board = createBoard(size);
 
   let held = null;
-  let orient = 'h';
   let left = PLACE_SECONDS;
   let locked = false;
 
+  /* Each square owns its icon from the start; placing only re-points it. */
+  const cellMarkup = Array.from({ length: size * size }, (_, i) => `
+    <div class="cell" role="gridcell" data-r="${Math.floor(i / size)}" data-c="${i % size}">
+      ${useIcon('', 'cell__icon')}
+    </div>`).join('');
+
   host.innerHTML = `
+    ${spriteMarkup()}
+
     <button class="icon-btn" type="button" data-action="back" aria-label="Leave match">
       ${arrowLeftIcon()}
     </button>
@@ -72,9 +79,9 @@ export function renderPlace(host) {
           <div class="board__ranks">
             ${Array.from({ length: size }, (_, i) => `<span>${RANKS[i]}</span>`).join('')}
           </div>
-          <div class="board__grid" role="grid" aria-label="Your battlefield">
-            ${Array.from({ length: size * size }, (_, i) =>
-              `<div class="cell" role="gridcell" data-r="${Math.floor(i / size)}" data-c="${i % size}"></div>`).join('')}
+          <div class="board__play">
+            <div class="board__grid" role="grid" aria-label="Your battlefield">${cellMarkup}</div>
+            <div class="board__arrows"></div>
           </div>
         </div>
       </div>
@@ -87,66 +94,97 @@ export function renderPlace(host) {
       </aside>
 
       <div class="place__actions">
-        <button class="action action--white" type="button" data-rotate>
-          <span class="action__icon">${rotateIcon()}</span>
-          <span class="action__label">Rotate</span>
-        </button>
         <button class="action action--white" type="button" data-done disabled>
           <span class="action__label">Ready</span>
         </button>
       </div>
     </div>`;
 
+  const play = host.querySelector('.board__play');
   const grid = host.querySelector('.board__grid');
+  const arrows = host.querySelector('.board__arrows');
   const cells = [...grid.children];
-  const cellAt = (r, c) => cells[r * size + c];
+  const icons = cells.map((el) => el.querySelector('use'));
+  const cards = [...host.querySelectorAll('[data-unit]')];
   const timerValue = host.querySelector('.timer__value');
   const timerChip = host.querySelector('.timer');
   const doneBtn = host.querySelector('[data-done]');
   const actions = host.querySelector('.place__actions');
 
+  const at = (r, c) => r * size + c;
+  const onBoard = (r, c) => r >= 0 && c >= 0 && r < size && c < size;
+
   /* ── painting ──────────────────────────────────────────────────────── */
 
   function paint() {
-    cells.forEach((el) => {
-      el.className = 'cell';
-      el.innerHTML = '';
-    });
+    cells.forEach((el) => { el.className = 'cell'; });
 
     board.pieces.forEach((piece) => {
-      const icon = `<span class="cell__icon">${UNIT_ICON[piece.unit]()}</span>`;
       piece.cells.forEach(([r, c]) => {
-        const el = cellAt(r, c);
-        el.classList.add('cell--taken');
-        if (piece.mine) el.classList.add('cell--mine');
-        el.innerHTML = icon;   /* a 5-tile missile reads as five missiles */
+        const i = at(r, c);
+        cells[i].classList.add('cell--taken');
+        if (piece.mine) cells[i].classList.add('cell--mine');
+        icons[i].setAttribute('href', `#u-${piece.unit}`);
       });
     });
 
-    host.querySelectorAll('[data-unit]').forEach((card) => {
-      const id = card.dataset.unit;
-      const leftOver = remaining(board, id);
-      card.querySelector('.unit__count').innerHTML = `&times;${leftOver}`;
-      card.classList.toggle('is-selected', held === id);
+    cards.forEach((card) => {
+      const leftOver = remaining(board, card.dataset.unit);
+      card.querySelector('.unit__count').textContent = `×${leftOver}`;
+      card.classList.toggle('is-selected', held === card.dataset.unit);
       card.classList.toggle('is-empty', leftOver === 0);
     });
 
+    paintArrows();
+    play.classList.toggle('is-holding', !!held);
     doneBtn.disabled = !isComplete(board) || locked;
   }
 
-  function clearPreview() {
-    cells.forEach((el) => el.classList.remove('cell--ok', 'cell--bad'));
+  /* A pair of half-circle arrows above and below every multi-tile unit. */
+  function paintArrows() {
+    if (locked) { arrows.innerHTML = ''; return; }
+
+    arrows.innerHTML = board.pieces
+      .filter((piece) => piece.cells.length > 1)
+      .map((piece) => {
+        const rows = piece.cells.map(([r]) => r);
+        const cols = piece.cells.map(([, c]) => c);
+        const x = ((Math.min(...cols) + Math.max(...cols) + 1) / 2 / size) * 100;
+        const top = (Math.min(...rows) / size) * 100;
+        const bottom = ((Math.max(...rows) + 1) / size) * 100;
+
+        return `
+          <button class="rot" type="button" data-rot="${piece.id}" data-dir="-1"
+                  style="left:${x}%;top:${top}%" aria-label="Turn left">
+            ${useIcon('rot-ccw')}
+          </button>
+          <button class="rot" type="button" data-rot="${piece.id}" data-dir="1"
+                  style="left:${x}%;top:${bottom}%" aria-label="Turn right">
+            ${useIcon('rot-cw')}
+          </button>`;
+      })
+      .join('');
   }
+
+  const clearPreview = () =>
+    cells.forEach((el) => el.classList.remove('cell--ok', 'cell--bad'));
 
   function showPreview(row, col) {
     clearPreview();
     if (!held) return;
-    const unit = unitById(held);
-    const shape = cellsFor(row, col, unit.length, orient);
-    const ok = fits(board, shape);
+    const orient = firstFit(board, held, row, col);
+    const shape = cellsFor(row, col, unitById(held).length, orient ?? 'h');
     shape.forEach(([r, c]) => {
-      if (r < 0 || c < 0 || r >= size || c >= size) return;
-      cellAt(r, c).classList.add(ok ? 'cell--ok' : 'cell--bad');
+      if (onBoard(r, c)) cells[at(r, c)].classList.add(orient ? 'cell--ok' : 'cell--bad');
+    });
+  }
+
+  function reject(shape) {
+    shape.forEach(([r, c]) => {
+      if (!onBoard(r, c)) return;
+      const el = cells[at(r, c)];
+      el.classList.remove('cell--reject');
+      requestAnimationFrame(() => el.classList.add('cell--reject'));
     });
   }
 
@@ -154,33 +192,25 @@ export function renderPlace(host) {
 
   function selectUnit(id) {
     if (locked) return;
-    const card = host.querySelector(`[data-unit="${id}"]`);
+    const card = cards.find((c) => c.dataset.unit === id);
     if (remaining(board, id) <= 0) {
       card.classList.remove('is-nudge');
       requestAnimationFrame(() => card.classList.add('is-nudge'));
       return;
     }
     held = held === id ? null : id;
-    if (unitById(id).length === 1) orient = 'h';
     clearPreview();
     paint();
   }
 
+  /* No rotate button: a tap takes the first orientation that fits, and the
+     arrows on the placed unit turn it from there. */
   function tryPlace(row, col) {
-    const unit = unitById(held);
-    const shape = cellsFor(row, col, unit.length, orient);
-
-    if (!fits(board, shape)) {
-      shape.forEach(([r, c]) => {
-        if (r >= 0 && c >= 0 && r < size && c < size) {
-          const el = cellAt(r, c);
-          el.classList.remove('cell--reject');
-          requestAnimationFrame(() => el.classList.add('cell--reject'));
-        }
-      });
+    const orient = firstFit(board, held, row, col);
+    if (!orient) {
+      reject(cellsFor(row, col, unitById(held).length, 'h'));
       return;
     }
-
     place(board, held, row, col, orient);
     if (remaining(board, held) <= 0) held = null;
     clearPreview();
@@ -192,24 +222,28 @@ export function renderPlace(host) {
     return el ? [+el.dataset.r, +el.dataset.c] : null;
   };
 
-  host.addEventListener('pointerdown', (e) => {
+  on(host, 'pointerdown', (e) => {
     const card = e.target.closest('[data-unit]');
     if (card) selectUnit(card.dataset.unit);
   });
 
-  /* one move handler covers mouse hover and dragging a unit onto the board */
-  host.addEventListener('pointermove', (e) => {
+  /* One move handler covers mouse hover and dragging a unit with a finger:
+     on touch the events keep targeting the tray card, so the square is
+     found by coordinate rather than by event target. */
+  on(host, 'pointermove', (e) => {
     if (!held || locked) return;
-    const at = cellUnder(e.clientX, e.clientY);
-    if (at) showPreview(at[0], at[1]);
+    const spot = cellUnder(e.clientX, e.clientY);
+    if (spot) showPreview(spot[0], spot[1]);
     else clearPreview();
   });
 
-  host.addEventListener('pointerup', (e) => {
+  on(host, 'pointercancel', clearPreview);
+
+  on(host, 'pointerup', (e) => {
     if (locked) return;
-    const at = cellUnder(e.clientX, e.clientY);
-    if (!at) { clearPreview(); return; }
-    const [row, col] = at;
+    const spot = cellUnder(e.clientX, e.clientY);
+    if (!spot) { clearPreview(); return; }
+    const [row, col] = spot;
 
     if (held) { tryPlace(row, col); return; }
 
@@ -217,16 +251,21 @@ export function renderPlace(host) {
     if (piece) {
       remove(board, piece.id);
       held = piece.unit;
-      orient = piece.orient;
       paint();
       showPreview(row, col);
     }
   });
 
-  host.querySelector('[data-rotate]').addEventListener('click', () => {
-    if (locked) return;
-    orient = ORIENTS[(ORIENTS.indexOf(orient) + 1) % ORIENTS.length];
-    host.querySelector('[data-rotate]').dataset.orient = orient;
+  on(arrows, 'click', (e) => {
+    const btn = e.target.closest('[data-rot]');
+    if (!btn || locked) return;
+
+    const piece = board.pieces.find((p) => p.id === +btn.dataset.rot);
+    const anchor = piece?.cells[0];
+    if (!rotate(board, +btn.dataset.rot, +btn.dataset.dir) && anchor) {
+      reject(pieceAt(board, anchor[0], anchor[1])?.cells ?? []);
+    }
+    paint();
   });
 
   /* ── finishing ─────────────────────────────────────────────────────── */
@@ -254,7 +293,7 @@ export function renderPlace(host) {
     console.info(`[blindwar] fleet ready (${board.taken.size}/${TOTAL_TILES} tiles${auto ? ', auto-placed' : ''}) — match not built yet`);
   }
 
-  doneBtn.addEventListener('click', () => finish(false));
+  on(doneBtn, 'click', () => finish(false));
 
   ticker = setInterval(() => {
     if (token !== renderToken) { clearInterval(ticker); return; }

@@ -130,52 +130,58 @@ export const playIcon = () =>
   );
 
 /* ── Defence units ──────────────────────────────────────────────────────
-   Flat silhouettes, readable down to ~13px in the inventory rows.      */
+   Defined once as sprite symbols. The board can hold 24 of these and the
+   tray another 16, so they are referenced with <use> rather than parsed
+   again every repaint.                                                  */
 
-const solid = (body) => svg('0 0 24 24', `<g fill="currentColor">${body}</g>`);
+export const UNIT_BODY = {
+  missile:
+    '<path d="M12 1.5c2.1 2.2 3.3 5 3.3 8.1v5.6H8.7V9.6c0-3.1 1.2-5.9 3.3-8.1Z" />' +
+    '<path d="M8.7 11.6 6 14.5v3.6l2.7-1.9zM15.3 11.6 18 14.5v3.6l-2.7-1.9z" />' +
+    '<path d="M9.7 16.4h4.6l-1.1 4.1h-2.4z" />',
+  cannon:
+    '<path d="M9.1 13.9 17.6 5.6l2.9 3-8.5 8.3z" />' +
+    '<circle cx="8.2" cy="17.6" r="3.3" />' +
+    '<path d="M4.2 19.1h7.6l-1.1 2.2H5.1z" />',
+  mortar:
+    '<path d="M9.4 17.2 15.4 5.4l3.1 1.6-6 11.8z" />' +
+    '<path d="M5.6 17.8h9.6l1.1 2.7H4.5z" />',
+  tank:
+    '<rect x="2.6" y="16.4" width="18.8" height="4.2" rx="2.1" />' +
+    '<path d="M4.8 11.9h14.4v4.1H4.8z" />' +
+    '<path d="M9.4 8.6h5.8v3.1H9.4z" />' +
+    '<path d="M15.1 9.5h6.3v1.7h-6.3z" />',
+  soldier:
+    '<path d="M8.4 6.7a3.6 3.6 0 0 1 7.2 0z" />' +
+    '<circle cx="12" cy="9.1" r="2.4" />' +
+    '<path d="M9.2 11.8h5.6l1.3 8.8H7.9z" />' +
+    '<path d="M14.6 12.4h6.8v1.6h-6.8z" />',
+  mine:
+    '<path d="M4.3 17.1a7.7 7.7 0 0 1 15.4 0z" />' +
+    '<path d="M11 5.2h2v3.1h-2z" />' +
+    '<rect x="3.2" y="17.3" width="17.6" height="2.4" rx="1.2" />',
+};
 
-export const missileIcon = () => solid(
-  '<path d="M12 1.5c2.1 2.2 3.3 5 3.3 8.1v5.6H8.7V9.6c0-3.1 1.2-5.9 3.3-8.1Z" />' +
-  '<path d="M8.7 11.6 6 14.5v3.6l2.7-1.9zM15.3 11.6 18 14.5v3.6l-2.7-1.9z" />' +
-  '<path d="M9.7 16.4h4.6l-1.1 4.1h-2.4z" />'
-);
+/* Half-circle arrows, for rotating a placed unit either way. */
+const ROT_BODY = {
+  ccw:
+    '<path d="M19.2 13.6a7.2 7.2 0 0 0-14.4 0" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" />' +
+    '<path d="M4.8 18.4 1.5 12.9h6.6z" fill="currentColor" />',
+  cw:
+    '<path d="M4.8 13.6a7.2 7.2 0 0 1 14.4 0" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" />' +
+    '<path d="M19.2 18.4 15.9 12.9h6.6z" fill="currentColor" />',
+};
 
-export const cannonIcon = () => solid(
-  '<path d="M9.1 13.9 17.6 5.6l2.9 3-8.5 8.3z" />' +
-  '<circle cx="8.2" cy="17.6" r="3.3" />' +
-  '<path d="M4.2 19.1h7.6l-1.1 2.2H5.1z" />'
-);
+/** One hidden sprite, injected once per screen. */
+export const spriteMarkup = () =>
+  '<svg class="sprite" aria-hidden="true" focusable="false" width="0" height="0">' +
+  Object.entries(UNIT_BODY).map(([id, body]) =>
+    `<symbol id="u-${id}" viewBox="0 0 24 24"><g fill="currentColor">${body}</g></symbol>`).join('') +
+  Object.entries(ROT_BODY).map(([id, body]) =>
+    `<symbol id="rot-${id}" viewBox="0 0 24 24">${body}</symbol>`).join('') +
+  '</svg>';
 
-export const mortarIcon = () => solid(
-  '<path d="M9.4 17.2 15.4 5.4l3.1 1.6-6 11.8z" />' +
-  '<path d="M5.6 17.8h9.6l1.1 2.7H4.5z" />'
-);
+/** A reference to a sprite symbol — cheap to create, cheap to re-point. */
+export const useIcon = (id, cls = '') =>
+  `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#${id}" /></svg>`;
 
-export const tankIcon = () => solid(
-  '<rect x="2.6" y="16.4" width="18.8" height="4.2" rx="2.1" />' +
-  '<path d="M4.8 11.9h14.4v4.1H4.8z" />' +
-  '<path d="M9.4 8.6h5.8v3.1H9.4z" />' +
-  '<path d="M15.1 9.5h6.3v1.7h-6.3z" />'
-);
-
-export const soldierIcon = () => solid(
-  '<path d="M8.4 6.7a3.6 3.6 0 0 1 7.2 0z" />' +
-  '<circle cx="12" cy="9.1" r="2.4" />' +
-  '<path d="M9.2 11.8h5.6l1.3 8.8H7.9z" />' +
-  '<path d="M14.6 12.4h6.8v1.6h-6.8z" />'
-);
-
-export const mineIcon = () => solid(
-  '<path d="M4.3 17.1a7.7 7.7 0 0 1 15.4 0z" />' +
-  '<path d="M11 5.2h2v3.1h-2z" />' +
-  '<rect x="3.2" y="17.3" width="17.6" height="2.4" rx="1.2" />'
-);
-
-export const rotateIcon = () =>
-  svg(
-    '0 0 24 24',
-    '<g stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' +
-      '<path d="M20.4 12a8.4 8.4 0 1 1-2.5-6" />' +
-      '<path d="M20.6 3.4v4.4h-4.4" />' +
-      '</g>'
-  );

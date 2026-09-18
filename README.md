@@ -93,11 +93,20 @@ attached, so it can be exercised straight from node:
   attempts
 
 The screen ([place.js](src/js/place.js)) drives it with one pointer flow:
-tap a unit to pick it up, tap a square to drop it (or drag from the tray
-straight onto the board), Rotate cycles the four orientations, and tapping a
-placed unit lifts it back into the tray. Ready unlocks at 24/24. If the
-120-second timer runs out first, `autoPlace()` finishes the job and the
-badge says so.
+tap a unit to pick it up, tap a square to drop it, or drag it from the tray
+straight onto the board with a finger. Dropping takes the first orientation
+that fits (`firstFit`), and every placed multi-tile unit carries a pair of
+half-circle arrows that turn it around its anchor square — `rotate()` skips
+orientations that don't fit and puts the unit back untouched if none do.
+Tapping a placed unit lifts it back into the tray. Ready unlocks at 24/24;
+if the 120-second timer runs out first, `autoPlace()` finishes the job and
+the badge says so.
+
+Two details that matter on a phone: the tray cards set `touch-action: none`
+so a drag off them doesn't pan the page, and the unit icons are sprite
+symbols referenced with `<use>` rather than inline SVG — a board and tray
+hold 40 of them, and re-parsing that markup on every repaint made icons
+arrive late or not at all.
 
 ## Placeholder behaviour (no backend yet)
 

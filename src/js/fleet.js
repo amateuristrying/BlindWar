@@ -35,6 +35,20 @@ export function cellsFor(row, col, length, orient) {
   return out;
 }
 
+/** What to try when the player just taps a square. */
+export const ORIENT_ORDER = ['h', 'v', 'd', 'a'];
+
+/** The first orientation that fits at (row, col), or null if none does. */
+export function firstFit(board, unitId, row, col) {
+  const unit = unitById(unitId);
+  if (!unit) return null;
+  for (const orient of ORIENT_ORDER) {
+    if (fits(board, cellsFor(row, col, unit.length, orient))) return orient;
+    if (unit.length === 1) break;
+  }
+  return null;
+}
+
 export function createBoard(size) {
   return { size, taken: new Map(), pieces: [], nextId: 1 };
 }
@@ -134,5 +148,29 @@ function tryOne(board, unit, rng, orthogonalOnly) {
     }
   }
 
+  return null;
+}
+
+/**
+ * Turn a placed unit around its anchor square. Steps through the
+ * orientations until one fits; if none do, the unit goes back as it was
+ * and this returns null.
+ */
+export function rotate(board, pieceId, dir = 1) {
+  const piece = board.pieces.find((p) => p.id === pieceId);
+  if (!piece) return null;
+  if (piece.cells.length === 1) return piece;
+
+  const [row, col] = piece.cells[0];
+  const from = ORIENTS.indexOf(piece.orient);
+  remove(board, pieceId);
+
+  for (let step = 1; step < ORIENTS.length; step++) {
+    const i = (((from + step * dir) % ORIENTS.length) + ORIENTS.length) % ORIENTS.length;
+    const turned = place(board, piece.unit, row, col, ORIENTS[i]);
+    if (turned) return turned;
+  }
+
+  place(board, piece.unit, row, col, piece.orient);
   return null;
 }

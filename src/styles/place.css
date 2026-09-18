@@ -96,8 +96,16 @@
 }
 
 /* the 1px gap IS the grid line, so the rules stay hairline-thin */
-.board__grid {
+.board__play {
   grid-area: 2 / 2;
+  position: relative;
+}
+
+.sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+.board__grid {
+  width: 100%;
+  height: 100%;
   display: grid;
   grid-template-columns: repeat(var(--n), 1fr);
   grid-template-rows: repeat(var(--n), 1fr);
@@ -126,14 +134,58 @@
 .cell--taken { background: var(--tone); }
 .cell--mine { background: color-mix(in srgb, var(--tone) 62%, var(--ink)); }
 
-.cell__icon { display: block; width: 62%; color: #fff; }
-.cell__icon svg { width: 100%; height: auto; }
+/* the icon lives in every square from the start and is simply re-pointed */
+.cell__icon {
+  display: none;
+  width: 62%;
+  height: 62%;
+  color: #fff;
+}
+
+.cell--taken .cell__icon { display: block; }
 
 .cell--reject { animation: cell-reject .32s ease; }
 
 @keyframes cell-reject {
   0%, 100% { background: #f6fafe; }
   40% { background: #f4a3ae; }
+}
+
+/* ── Rotation arrows on each placed unit ────────────────────────────── */
+
+.board__arrows {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* out of the way while a unit is being dragged across the board */
+.board__play.is-holding .board__arrows { opacity: .25; }
+
+.rot {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: clamp(21px, 5.6vw, 26px);
+  height: clamp(21px, 5.6vw, 26px);
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  translate: -50% -50%;
+  background: var(--surface);
+  color: var(--tone);
+  box-shadow: 0 1px 2px rgba(17, 24, 39, .14), 0 3px 8px rgba(17, 24, 39, .16);
+  pointer-events: auto;
+  touch-action: manipulation;
+  transition: transform .14s cubic-bezier(.2, .8, .3, 1), background-color .14s ease,
+    color .14s ease;
+}
+
+.rot svg { width: 68%; height: 68%; }
+.rot:active { transform: scale(.88); }
+
+@media (hover: hover) {
+  .rot:hover { background: var(--ink); color: var(--ink-inverse); transform: scale(1.08); }
 }
 
 /* ── Who you are ────────────────────────────────────────────────────── */
@@ -193,6 +245,7 @@
   border-radius: 13px;
   background: var(--surface);
   box-shadow: 0 1px 2px rgba(17, 24, 39, .05), 0 5px 14px rgba(17, 24, 39, .07);
+  touch-action: none;   /* a drag off this card must not pan the page */
   transition: border-color .15s ease, transform .15s cubic-bezier(.2, .8, .3, 1),
     opacity .15s ease;
 }
@@ -243,19 +296,13 @@
 
 .place__actions .action {
   width: auto;
-  min-width: 132px;
+  min-width: 160px;
   margin-top: 0;
   min-height: clamp(46px, 6.4vh, 54px);
 }
 
 .place__actions .action:disabled { opacity: .45; }
 .place__actions .action:disabled:hover { background: var(--surface); color: var(--ink); }
-
-/* the rotate button shows which way the held unit is facing */
-[data-rotate] .action__icon svg { transition: transform .2s cubic-bezier(.2, .8, .3, 1); }
-[data-rotate][data-orient="v"] .action__icon svg { transform: rotate(90deg); }
-[data-rotate][data-orient="d"] .action__icon svg { transform: rotate(45deg); }
-[data-rotate][data-orient="a"] .action__icon svg { transform: rotate(-45deg); }
 
 .badge--done {
   --tone: var(--c-green);
