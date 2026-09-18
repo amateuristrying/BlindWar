@@ -3,13 +3,20 @@ import { renderModes, FRIENDS } from './modes.js';
 import { renderSearch } from './search.js';
 import { renderMatch, setOpponent } from './match.js';
 import { renderReady } from './ready.js';
+import { renderPlace } from './place.js';
 import { curtain } from './curtain.js';
 
 renderGridField(document.getElementById('gridField'));
 
 /* Screens are rebuilt on entry, so they always show current data
    (a friend added on the search screen shows up in the friend list). */
-const RENDER = { modes: renderModes, search: renderSearch, match: renderMatch, ready: renderReady };
+const RENDER = {
+  modes: renderModes,
+  search: renderSearch,
+  match: renderMatch,
+  ready: renderReady,
+  place: renderPlace,
+};
 
 /* ── Screen routing ─────────────────────────────────────────────────── */
 
@@ -81,9 +88,17 @@ document.addEventListener('click', (e) => {
   else console.info(`[blindwar] ${action} — screen not built yet`);
 });
 
-/* Starting a match is the one navigation big enough to earn the curtain. */
+/* The two navigations big enough to earn the curtain. */
 document.addEventListener('blindwar:start-match', () => {
   curtain(() => show('ready'));
+});
+
+/* Both ready: count down in the strip, then dive into your own board. */
+document.addEventListener('blindwar:ready', () => {
+  curtain(() => show('place'), {
+    countdown: ['3', '2', '1'],
+    zoomFrom: '#screen-ready .side--you',
+  });
 });
 
 /* Keep the layout honest when the mobile URL bar shows/hides. */

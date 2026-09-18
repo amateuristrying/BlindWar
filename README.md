@@ -21,6 +21,7 @@ src/styles/modes.css  mode picker tiles and friend list
 src/styles/search.css Friend Hash screen
 src/styles/match.css  match settings, option chips, glossy colour balls
 src/styles/ready.css  readiness screen
+src/styles/place.css  placement board and Your Defence tray
 src/styles/curtain.css the curtain
 src/js/grids.js       the four drifting corner boards (reusable board SVG)
 src/js/icons.js       inline SVG icons, all drawn with currentColor
@@ -28,6 +29,8 @@ src/js/modes.js       mode picker, built from MODE_GROUPS
 src/js/search.js      Friend Hash screen: lookup, send request, copy own hash
 src/js/match.js       match settings: difficulty, time limit, player colour
 src/js/ready.js       readiness screen: two boards, one black line
+src/js/fleet.js       the fleet and the placement rules (pure logic, no DOM)
+src/js/place.js       defence placement: board, inventory, 120s timer
 src/js/curtain.js     the white strip-to-cover page curtain
 src/js/main.js        screen router, press feedback, actions
 ```
@@ -43,6 +46,7 @@ src/js/main.js        screen router, press feedback, actions
 - `search` — Friend Hash lookup (from "Search for friends")
 - `match` — match settings (tap a friend's row in the friend list)
 - `ready` — player readiness, entered through the curtain from Start Match
+- `place` — defence placement, entered through a 3-2-1 countdown curtain
 
 Routing is `history`-based, so the phone's back gesture works. Screens are
 re-rendered on entry, so a friend added on the search screen is already in
@@ -65,6 +69,29 @@ out, at roughly a third of the original's duration.
 The drop-shadow sits on `.curtain`, not on the clipped `.curtain__panel`: a
 filter on the clipped element is cut away with it, and a white strip on a
 near-white page needs that shadow to read at all.
+
+## Placement
+
+[fleet.js](src/js/fleet.js) holds the fleet and the rules, with no DOM
+attached, so it can be exercised straight from node:
+
+- 1 missile (5), 2 cannons (4), 2 mortars (3), 1 tank (2), 1 soldier (1),
+  2 mines (1) = 22 defence tiles + 2 mines = `TOTAL_TILES` 24, the same at
+  every board size
+- four orientations: `h` across, `v` down, `d` down-right, `a` down-left
+- `fits()` rejects anything off-board or overlapping, partial overlap
+  included
+- `autoPlace()` fills whatever is left in the tray without disturbing
+  anything placed by hand; if a run boxes itself in it rolls back only its
+  own pieces and retries, falling back to orthogonal-only for the last few
+  attempts
+
+The screen ([place.js](src/js/place.js)) drives it with one pointer flow:
+tap a unit to pick it up, tap a square to drop it (or drag from the tray
+straight onto the board), Rotate cycles the four orientations, and tapping a
+placed unit lifts it back into the tray. Ready unlocks at 24/24. If the
+120-second timer runs out first, `autoPlace()` finishes the job and the
+badge says so.
 
 ## Placeholder behaviour (no backend yet)
 
