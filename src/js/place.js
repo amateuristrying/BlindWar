@@ -114,11 +114,12 @@ export function renderPlace(host) {
     });
 
     board.pieces.forEach((piece) => {
-      piece.cells.forEach(([r, c], i) => {
+      const icon = `<span class="cell__icon">${UNIT_ICON[piece.unit]()}</span>`;
+      piece.cells.forEach(([r, c]) => {
         const el = cellAt(r, c);
         el.classList.add('cell--taken');
         if (piece.mine) el.classList.add('cell--mine');
-        if (i === 0) el.innerHTML = `<span class="cell__icon">${UNIT_ICON[piece.unit]()}</span>`;
+        el.innerHTML = icon;   /* a 5-tile missile reads as five missiles */
       });
     });
 

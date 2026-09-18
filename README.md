@@ -5,8 +5,12 @@ Mobile-first web game. No build step, no dependencies — plain HTML/CSS/ES modu
 ## Run
 
 ```bash
-python3 -m http.server 4173 --bind 0.0.0.0
+python3 dev-server.py 4173
 ```
+
+It is `http.server` with `Cache-Control: no-store` bolted on, because plain
+`http.server` sends no cache headers and browsers then serve yesterday's
+`index.html` — which looks exactly like a change that didn't work.
 
 - Laptop: http://localhost:4173
 - Phone (same Wi-Fi): http://<your-mac-ip>:4173
@@ -67,8 +71,10 @@ long as the point count stays at four. Eases are the originals:
 out, at roughly a third of the original's duration.
 
 The drop-shadow sits on `.curtain`, not on the clipped `.curtain__panel`: a
-filter on the clipped element is cut away with it, and a white strip on a
-near-white page needs that shadow to read at all.
+filter on the clipped element is cut away with it. A shadow alone still isn't
+enough on a white screen, so the page dims behind the strip while it travels
+— the curtain itself stays white. Passing `countdown: ['3','2','1']` shows
+each number in turn and deepens the strip to carry them.
 
 ## Placement
 

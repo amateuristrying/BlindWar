@@ -17,6 +17,15 @@
   pointer-events: auto;   /* swallows taps for the whole transition */
 }
 
+/* A white strip on a white screen is invisible, so the page dims behind
+   it — the curtain itself stays white. */
+.curtain__veil {
+  position: absolute;
+  inset: 0;
+  background: rgba(16, 18, 24, .34);
+  opacity: 0;
+}
+
 .curtain__panel {
   position: absolute;
   inset: 0;
@@ -39,6 +48,14 @@
   letter-spacing: -.035em;
   line-height: 1;
   color: var(--ink);
+}
+
+/* a countdown is the moment, not a caption: big number, deep strip */
+.curtain.is-countdown .curtain__text {
+  font-size: clamp(64px, 20vw, 130px);
+  font-weight: 850;
+  letter-spacing: -.045em;
+  font-variant-numeric: tabular-nums;
 }
 
 /* the mask is what slices the word as it slides out */

@@ -41,6 +41,7 @@ export async function curtain(swap, { text = 'BlindWar', countdown = null, zoomF
   if (!root) { swap(); return; }
 
   const panel = root.querySelector('.curtain__panel');
+  const veil = root.querySelector('.curtain__veil');
   const line = root.querySelector('.curtain__text');
   const word = root.querySelector('.curtain__word');
   const labels = countdown?.length ? countdown : [text];
@@ -52,6 +53,7 @@ export async function curtain(swap, { text = 'BlindWar', countdown = null, zoomF
   }
 
   root.classList.add('is-active');
+  root.classList.toggle('is-countdown', labels.length > 1);
   document.body.classList.add('is-transitioning');
 
   /* the strip is exactly as tall as the word it carries */
@@ -59,6 +61,7 @@ export async function curtain(swap, { text = 'BlindWar', countdown = null, zoomF
   const strip = (right) =>
     `polygon(0% ${50 - half}%, ${right}% ${50 - half}%, ${right}% ${50 + half}%, 0% ${50 + half}%)`;
 
+  play(veil, [{ opacity: 0 }, { opacity: 1 }], { duration: WIPE_MS, easing: 'ease-out' });
   await play(panel, [{ clipPath: strip(0) }, { clipPath: strip(100) }],
     { duration: WIPE_MS, easing: EASE_WIPE });
 
@@ -93,11 +96,12 @@ export async function curtain(swap, { text = 'BlindWar', countdown = null, zoomF
   ], { duration: WORD_MS, easing: 'cubic-bezier(.6, 0, .78, 0)' });
 
   await wait(WORD_MS * 0.38);
+  play(veil, [{ opacity: 1 }, { opacity: 0 }], { duration: LIFT_MS, easing: 'ease-in' });
   await play(panel, [{ clipPath: COVER }, { clipPath: LIFT }],
     { duration: LIFT_MS, easing: EASE_LIFT });
 
-  [panel, word].forEach((el) => el.getAnimations().forEach((a) => a.cancel()));
+  [panel, word, veil].forEach((el) => el.getAnimations().forEach((a) => a.cancel()));
   if (zoom) zoom.getAnimations().forEach((a) => a.cancel());
-  root.classList.remove('is-active');
+  root.classList.remove('is-active', 'is-countdown');
   document.body.classList.remove('is-transitioning');
 }
