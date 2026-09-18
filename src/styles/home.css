@@ -1,0 +1,210 @@
+/* ── Backdrop: soft corner glows + four drifting boards ─────────────── */
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.backdrop__glow {
+  position: absolute;
+  inset: -10%;
+  background:
+    radial-gradient(38% 26% at 8% 6%, rgba(226, 86, 106, .14), transparent 70%),
+    radial-gradient(38% 26% at 94% 8%, rgba(106, 163, 239, .14), transparent 70%),
+    radial-gradient(40% 28% at 4% 88%, rgba(87, 193, 132, .15), transparent 70%),
+    radial-gradient(40% 28% at 96% 94%, rgba(171, 134, 228, .15), transparent 70%);
+}
+
+.grid-field {
+  position: absolute;
+  inset: 0;
+}
+
+/* keeps the middle of the screen calm, whatever the boards drift over */
+.backdrop__veil {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    74% 36% at 50% 51%,
+    rgba(251, 251, 253, .93) 0%,
+    rgba(251, 251, 253, .82) 42%,
+    rgba(251, 251, 253, 0) 76%
+  );
+}
+
+.grid-slot {
+  position: absolute;
+  /* one knob scales every board: --bw is the board's desktop size */
+  --w: min(56vw, calc(var(--bw) * var(--board-scale, 1)));
+  width: var(--w);
+  transform: rotate(var(--tilt)) skewY(var(--skew, 0deg));
+  transform-origin: 50% 50%;
+  will-change: transform;
+}
+
+.grid-float {
+  animation: drift var(--dur, 24s) ease-in-out var(--delay, 0s) infinite;
+  will-change: translate, rotate;
+}
+
+.grid-float > svg {
+  width: 100%;
+  height: auto;
+}
+
+@keyframes drift {
+  0%   { translate: 0 0;                                          rotate: 0deg; }
+  25%  { translate: var(--dx) calc(var(--dy) * -.65);              rotate: var(--dr); }
+  50%  { translate: calc(var(--dx) * -.45) var(--dy);              rotate: calc(var(--dr) * -.6); }
+  75%  { translate: calc(var(--dx) * -.85) calc(var(--dy) * .35);  rotate: calc(var(--dr) * .75); }
+  100% { translate: 0 0;                                           rotate: 0deg; }
+}
+
+/* ── Screen shell ───────────────────────────────────────────────────── */
+
+.screen--home {
+  justify-content: center;
+  gap: clamp(22px, 5.2vh, 46px);
+  padding:
+    calc(var(--sat) + 9vh)
+    calc(var(--sar) + 22px)
+    calc(var(--sab) + 3.5vh)
+    calc(var(--sal) + 22px);
+}
+
+/* ── Brand ──────────────────────────────────────────────────────────── */
+
+.brand {
+  position: relative;
+  text-align: center;
+  user-select: none;
+}
+
+/* keeps a drifting board label from landing on the wordmark */
+.brand::before {
+  content: '';
+  position: absolute;
+  inset: -34% -14%;
+  z-index: -1;
+  background: radial-gradient(
+    58% 56% at 50% 50%,
+    var(--bg) 0%,
+    rgba(251, 251, 253, .86) 48%,
+    rgba(251, 251, 253, 0) 74%
+  );
+}
+
+.brand__title {
+  margin: 0;
+  font-size: clamp(46px, 16.8vw, 88px);
+  font-weight: 830;
+  letter-spacing: -.035em;
+  line-height: .95;
+  color: var(--ink);
+}
+
+.brand__tagline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(8px, 2.6vw, 13px);
+  margin: clamp(10px, 2.2vh, 18px) 0 0;
+  font-size: clamp(11px, 3.3vw, 15px);
+  font-weight: 600;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.brand__tagline > span { display: block; }
+
+.brand__dot {
+  width: .34em;
+  height: .34em;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: .75;
+}
+
+.brand--compact .brand__title { font-size: clamp(34px, 12vw, 58px); }
+
+.brand--compact .brand__tagline {
+  margin-top: clamp(6px, 1.4vh, 12px);
+  font-size: clamp(9.5px, 2.9vw, 13px);
+}
+
+/* ── Menu ───────────────────────────────────────────────────────────── */
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(14px, 2.3vh, 20px);
+  width: min(282px, 74vw);
+}
+
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(10px, 3vw, 14px);
+  width: 100%;
+  min-height: clamp(54px, 7.4vh, 64px);
+  padding: 0 18px;
+  border: 0;
+  border-radius: var(--radius-btn);
+  background: var(--surface);
+  box-shadow: var(--shadow-btn);
+  font-size: clamp(18px, 5vw, 22px);
+  font-weight: 650;
+  letter-spacing: -.01em;
+  transition: transform .16s cubic-bezier(.2, .8, .3, 1), box-shadow .16s ease,
+    background-color .16s ease, color .16s ease;
+}
+
+.btn__icon {
+  display: block;
+  width: clamp(22px, 6vw, 26px);
+  flex: none;
+}
+
+.btn__icon svg {
+  width: 100%;
+  height: auto;
+}
+
+.btn__label { display: block; }
+
+.btn:active {
+  transform: scale(.972);
+  box-shadow: var(--shadow-btn-press);
+}
+
+@media (hover: hover) {
+  .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(17, 24, 39, .06), 0 12px 26px rgba(17, 24, 39, .12);
+  }
+  .btn:active { transform: scale(.98); }
+}
+
+/* ── Wider screens: keep the phone proportions, let the board breathe ── */
+
+:root { --board-scale: 1; }
+
+@media (min-width: 900px)  { :root { --board-scale: 1.3; } }
+@media (min-width: 1300px) { :root { --board-scale: 1.55; } }
+
+@media (min-width: 720px) {
+  .brand__title { font-size: clamp(76px, 8vw, 104px); }
+  .brand__tagline { font-size: 16px; letter-spacing: .24em; }
+  .menu { width: 340px; }
+  .btn { min-height: 66px; font-size: 23px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .grid-float { animation: none; }
+  .btn { transition: none; }
+}

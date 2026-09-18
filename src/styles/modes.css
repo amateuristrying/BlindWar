@@ -1,0 +1,242 @@
+/* ── Mode picker (after Start) ──────────────────────────────────────── */
+
+/* ── Cards ──────────────────────────────────────────────────────────── */
+
+.card__modes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(10px, 2.6vw, 14px);
+}
+
+/* ── Mode tiles ─────────────────────────────────────────────────────── */
+
+.tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(3px, .6vh, 6px);
+  padding: clamp(12px, 1.8vh, 16px) 18px clamp(11px, 1.6vh, 14px);
+  border: 1.5px solid transparent;
+  border-radius: var(--radius-tile);
+  text-align: center;
+  transition: background-color .16s ease, border-color .16s ease,
+    color .16s ease, transform .16s cubic-bezier(.2, .8, .3, 1);
+}
+
+.tile--red    { background: var(--c-red-soft);    border-color: var(--c-red-line);    color: var(--c-red); }
+.tile--blue   { background: var(--c-blue-soft);   border-color: var(--c-blue-line);   color: var(--c-blue); }
+.tile--green  { background: var(--c-green-soft);  border-color: var(--c-green-line);  color: var(--c-green); }
+.tile--purple { background: var(--c-purple-soft); border-color: var(--c-purple-line); color: var(--c-purple); }
+
+/* sized by height so 1v1 and 2v2 people stay the same size */
+.tile__icon {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.tile__icon svg {
+  height: clamp(21px, 6vw, 26px);
+  width: auto;
+}
+
+.tile__title {
+  font-size: clamp(17px, 4.9vw, 21px);
+  font-weight: 750;
+  letter-spacing: -.01em;
+  color: var(--ink);
+}
+
+.tile__sub {
+  font-size: clamp(10px, 2.85vw, 12.5px);
+  line-height: 1.25;
+  color: var(--ink-soft);
+  text-wrap: balance;
+}
+
+.tile__chevron {
+  position: absolute;
+  right: 3px;
+  top: 50%;
+  translate: 0 -50%;
+  width: 17px;
+  opacity: .55;
+}
+
+.tile__chevron svg { width: 100%; height: auto; }
+
+/* black state — text and icons invert with it */
+.tile:active .tile__title, .tile.is-pressed .tile__title { color: var(--ink-inverse); }
+.tile:active .tile__sub,   .tile.is-pressed .tile__sub   { color: var(--ink-inverse-soft); }
+.tile:active .tile__chevron, .tile.is-pressed .tile__chevron { opacity: .85; }
+.tile:active { transform: scale(.975); }
+
+@media (hover: hover) {
+  .tile:hover .tile__title { color: var(--ink-inverse); }
+  .tile:hover .tile__sub { color: var(--ink-inverse-soft); }
+  .tile:hover .tile__chevron { opacity: .85; }
+  .icon-btn:hover { transform: translateY(-1px); }
+}
+
+.icon-btn:active { transform: scale(.94); }
+
+@media (min-width: 720px) {
+  .brand--compact .brand__title { font-size: 62px; }
+  .cards { max-width: 470px; }
+  .icon-btn { width: 50px; height: 50px; }
+  .icon-btn svg { width: 25px; height: 25px; }
+}
+
+/* ── Friend list, inside the Friends card ───────────────────────────── */
+
+.friends {
+  margin-top: clamp(4px, 1vh, 8px);
+  padding-top: clamp(12px, 1.8vh, 16px);
+  border-top: 1px solid var(--line);
+}
+
+.friends__title {
+  margin: 0;
+  font-size: clamp(16px, 4.6vw, 20px);
+  font-weight: 750;
+  letter-spacing: -.015em;
+}
+
+.friends__sub {
+  margin: 3px 0 0;
+  font-size: clamp(11.5px, 3.2vw, 13.5px);
+  color: var(--ink-soft);
+}
+
+/* empty state */
+
+.friends__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(4px, .8vh, 7px);
+  margin-top: clamp(10px, 1.6vh, 14px);
+  padding: clamp(16px, 2.4vh, 22px) 14px clamp(14px, 2vh, 18px);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-tile);
+  background: var(--bg);
+  text-align: center;
+}
+
+.friends__empty-icon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2px;
+  color: #98a1b0;
+}
+
+.friends__empty-icon svg { height: clamp(30px, 8.4vw, 36px); width: auto; }
+
+.friends__empty-title {
+  margin: 0;
+  font-size: clamp(13.5px, 3.8vw, 16px);
+  font-weight: 650;
+  color: var(--ink-mid);
+}
+
+.friends__empty-sub {
+  margin: 0;
+  font-size: clamp(12px, 3.3vw, 14px);
+  color: var(--ink-soft);
+}
+
+.cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  width: min(100%, 300px);
+  min-height: clamp(42px, 6vh, 50px);
+  margin-top: clamp(10px, 1.6vh, 14px);
+  margin-inline: auto;   /* centred under the list too, not just in the empty state */
+  padding: 0 18px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--c-blue-soft);
+  color: var(--c-blue-ink);
+  font-size: clamp(14px, 4vw, 16.5px);
+  font-weight: 700;
+  letter-spacing: -.01em;
+  transition: background-color .16s ease, color .16s ease,
+    transform .16s cubic-bezier(.2, .8, .3, 1);
+}
+
+.cta__icon { display: block; flex: none; }
+.cta__icon svg { width: clamp(17px, 4.6vw, 19px); height: auto; }
+.cta:active { transform: scale(.975); }
+
+/* populated list */
+
+.friends__list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: clamp(10px, 1.6vh, 14px) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.friend {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-tile);
+  background: var(--bg);
+}
+
+.friend__avatar {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--c-green-soft);
+  color: var(--c-green);
+  font-size: 15px;
+  font-weight: 750;
+}
+
+.friend__text { display: flex; flex-direction: column; min-width: 0; }
+.friend__name { font-size: 14.5px; font-weight: 650; }
+
+.friend__hash {
+  font-size: 12px;
+  color: var(--ink-soft);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.friend__chevron { width: 15px; margin-left: auto; opacity: .45; }
+.friend__chevron svg { width: 100%; height: auto; }
+
+.friend {
+  transition: background-color .16s ease, border-color .16s ease, color .16s ease,
+    transform .16s cubic-bezier(.2, .8, .3, 1);
+}
+
+.friend:active { transform: scale(.985); }
+
+/* black state: the row inverts with it */
+.friend:active .friend__hash, .friend.is-pressed .friend__hash { color: var(--ink-inverse-soft); }
+.friend:active .friend__avatar, .friend.is-pressed .friend__avatar {
+  background: rgba(255, 255, 255, .16);
+  color: var(--ink-inverse);
+}
+.friend:active .friend__chevron, .friend.is-pressed .friend__chevron { opacity: .8; }
+
+@media (hover: hover) {
+  .friend:hover .friend__hash { color: var(--ink-inverse-soft); }
+  .friend:hover .friend__avatar { background: rgba(255, 255, 255, .16); color: var(--ink-inverse); }
+  .friend:hover .friend__chevron { opacity: .8; }
+}

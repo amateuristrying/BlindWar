@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>BlindWar</title>
+  <meta name="description" content="BlindWar — guess, avoid, win." />
+  <meta name="theme-color" content="#fbfbfd" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="BlindWar" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>&#127919;</text></svg>" />
+  <link rel="stylesheet" href="./src/styles/base.css" />
+  <link rel="stylesheet" href="./src/styles/home.css" />
+  <link rel="stylesheet" href="./src/styles/modes.css" />
+  <link rel="stylesheet" href="./src/styles/search.css" />
+  <link rel="stylesheet" href="./src/styles/match.css" />
+  <link rel="stylesheet" href="./src/styles/ready.css" />
+  <link rel="stylesheet" href="./src/styles/curtain.css" />
+</head>
+<body>
+  <div class="app">
+    <div class="backdrop" aria-hidden="true">
+      <div class="backdrop__glow"></div>
+      <div class="grid-field" id="gridField"></div>
+      <div class="backdrop__veil"></div>
+    </div>
+
+    <main class="screen screen--home is-active" id="screen-home">
+      <header class="brand">
+        <h1 class="brand__title">BlindWar</h1>
+        <p class="brand__tagline">
+          <span>Guess</span><b class="brand__dot" aria-hidden="true"></b>
+          <span>Avoid</span><b class="brand__dot" aria-hidden="true"></b>
+          <span>Win</span>
+        </p>
+      </header>
+
+      <nav class="menu" aria-label="Main menu">
+        <button class="btn" type="button" data-action="start">
+          <span class="btn__icon">
+            <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true">
+              <path d="M8.4 5.4 19 12 8.4 18.6Z" />
+            </svg>
+          </span>
+          <span class="btn__label">Start</span>
+        </button>
+
+        <button class="btn" type="button" data-action="rules">
+          <span class="btn__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 7.2C10.3 5.5 7.6 4.6 4.1 4.8a.9.9 0 0 0-.85.9v11.1c0 .5.4.9.9.88 3.2-.12 5.75.66 7.35 2.14" />
+              <path d="M12 7.2c1.7-1.7 4.4-2.6 7.9-2.4.47.03.85.42.85.9v11.1c0 .5-.4.9-.9.88-3.2-.12-5.75.66-7.35 2.14" />
+              <path d="M12 7.2v12.6" />
+            </svg>
+          </span>
+          <span class="btn__label">Rules</span>
+        </button>
+
+        <button class="btn" type="button" data-action="settings">
+          <span class="btn__icon">
+            <svg viewBox="0 0 24 24" fill="currentColor" fill-rule="evenodd" aria-hidden="true">
+              <path d="M10.19 4.21L10.55 1.2L13.45 1.2L13.81 4.21A8 8 0 0 1 16.23 5.21L18.61 3.34L20.66 5.39L18.79 7.77A8 8 0 0 1 19.79 10.19L22.8 10.55L22.8 13.45L19.79 13.81A8 8 0 0 1 18.79 16.23L20.66 18.61L18.61 20.66L16.23 18.79A8 8 0 0 1 13.81 19.79L13.45 22.8L10.55 22.8L10.19 19.79A8 8 0 0 1 7.77 18.79L5.39 20.66L3.34 18.61L5.21 16.23A8 8 0 0 1 4.21 13.81L1.2 13.45L1.2 10.55L4.21 10.19A8 8 0 0 1 5.21 7.77L3.34 5.39L5.39 3.34L7.77 5.21A8 8 0 0 1 10.19 4.21ZM8.4 12a3.6 3.6 0 1 0 7.2 0a3.6 3.6 0 1 0 -7.2 0Z" />
+            </svg>
+          </span>
+          <span class="btn__label">Settings</span>
+        </button>
+      </nav>
+    </main>
+
+    <section class="screen screen--stack screen--modes" id="screen-modes" aria-label="Choose a mode"></section>
+    <section class="screen screen--stack screen--search" id="screen-search" aria-label="Find a friend"></section>
+    <section class="screen screen--stack screen--match" id="screen-match" aria-label="Match settings"></section>
+    <section class="screen screen--ready" id="screen-ready" aria-label="Player readiness"></section>
+  </div>
+
+  <div class="curtain" id="curtain" aria-hidden="true">
+    <div class="curtain__panel">
+      <p class="curtain__text"><span class="curtain__mask"><span class="curtain__word">BlindWar</span></span></p>
+    </div>
+  </div>
+
+  <script type="module" src="./src/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,323 @@
+/* BlindWar — design tokens + reset. Mobile first. */
+
+:root {
+  color-scheme: light;
+
+  /* surface */
+  --bg: #fbfbfd;
+  --surface: #ffffff;
+
+  /* ink */
+  --ink: #12141a;
+  --ink-soft: #7c8593;
+  --ink-mid: #646d7c;
+  --line: #e8eaee;
+  --ink-inverse: #ffffff;
+  --ink-inverse-soft: rgba(255, 255, 255, .72);
+
+  /* board colours (also used for the drifting background grids) */
+  --c-red: #e2566a;
+  --c-blue: #6aa3ef;
+  --c-green: #57c184;
+  --c-purple: #ab86e4;
+
+  /* the same four colours as flat tile fills */
+  --c-red-soft: #fde9eb;    --c-red-line: #f7d3d8;
+  --c-blue-soft: #e6effd;   --c-blue-line: #d2e2fa;
+  --c-green-soft: #e4f7ec;  --c-green-line: #cdeddb;
+  --c-purple-soft: #f1eafc; --c-purple-line: #e3d7f7;
+  --c-blue-ink: #2a74e6;   /* readable blue for text on --c-blue-soft */
+  --c-blue-btn: #4a90f2;   /* solid primary button */
+  --c-green-ink: #1ba75a;
+  --c-red-ink: #e03b4e;
+
+  /* vivid player colours — the glossy balls */
+  --ball-red: #f0393f;
+  --ball-blue: #2f7df0;
+  --ball-green: #21c45d;
+  --ball-purple: #9b2ff0;
+
+  /* shape */
+  --radius-btn: 18px;
+  --radius-card: 24px;
+  --radius-tile: 16px;
+  --shadow-btn: 0 1px 2px rgba(17, 24, 39, .06), 0 6px 18px rgba(17, 24, 39, .09);
+  --shadow-btn-press: 0 1px 2px rgba(17, 24, 39, .08);
+
+  /* safe areas, used by every screen */
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+}
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI",
+    Inter, "Helvetica Neue", Roboto, Arial, sans-serif;
+  font-synthesis-weight: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overscroll-behavior: none;
+}
+
+/* the whole thing is a fixed-viewport app, never a scrolling document */
+body {
+  overflow: hidden;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  margin: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+svg { display: block; }
+
+/* any class that sets `display` would otherwise beat the UA's [hidden] rule */
+[hidden] { display: none !important; }
+
+:focus-visible {
+  outline: 3px solid rgba(18, 20, 26, .35);
+  outline-offset: 3px;
+}
+
+.app {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+  height: 100dvh;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* ── Screens ────────────────────────────────────────────────────────────
+   Every screen fills the app; exactly one carries .is-active.          */
+
+.screen {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: opacity .26s ease, transform .3s cubic-bezier(.2, .8, .3, 1),
+    visibility .3s;
+}
+
+.screen.is-active {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+
+/* Vertically centres content that fits, scrolls it when it doesn't. */
+.screen__inner {
+  width: 100%;
+  margin-block: auto;
+}
+
+/* Screens that stack content under the wordmark (modes, search, ...) */
+.screen--stack {
+  justify-content: flex-start;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding:
+    calc(var(--sat) + clamp(64px, 8.5vh, 94px))
+    calc(var(--sar) + 18px)
+    calc(var(--sab) + 24px)
+    calc(var(--sal) + 18px);
+}
+
+.screen--stack .screen__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(18px, 3vh, 32px);
+}
+
+/* ── Card surface, shared by every stacked screen ───────────────────── */
+
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(14px, 2.2vh, 20px);
+  width: 100%;
+  max-width: 430px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(12px, 1.8vh, 16px);
+  padding: clamp(14px, 2vh, 18px);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  box-shadow: 0 1px 2px rgba(17, 24, 39, .05), 0 10px 28px rgba(17, 24, 39, .085);
+}
+
+.card__head {
+  display: flex;
+  align-items: center;
+  gap: clamp(10px, 3vw, 14px);
+}
+
+/* sized by height so the wide duo and the round globe read the same */
+.card__icon {
+  display: flex;
+  align-items: center;
+  flex: none;
+}
+
+.card__icon svg { height: clamp(26px, 7.4vw, 32px); width: auto; }
+.card__icon--red { color: var(--c-red); }
+.card__icon--ink { color: var(--ink); }
+
+.card__title {
+  margin: 0;
+  font-size: clamp(19px, 5.5vw, 25px);
+  font-weight: 750;
+  letter-spacing: -.018em;
+  line-height: 1.1;
+}
+
+.card__sub {
+  margin: 3px 0 0;
+  font-size: clamp(12px, 3.4vw, 14px);
+  color: var(--ink-soft);
+  line-height: 1.25;
+}
+
+/* ── Round icon button (back, and whatever comes next) ──────────────── */
+
+.icon-btn {
+  position: absolute;
+  top: calc(var(--sat) + 14px);
+  left: calc(var(--sal) + 16px);
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-btn);
+  transition: transform .16s cubic-bezier(.2, .8, .3, 1), box-shadow .16s ease,
+    background-color .16s ease, color .16s ease;
+}
+
+.icon-btn svg { width: 22px; height: 22px; }
+
+/* the active screen is the scroll container, so pin the back button */
+.screen.is-active .icon-btn { position: fixed; }
+
+/* ── Action buttons, shared by every screen ────────────────────────────────────────────────────────── */
+
+.action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: clamp(48px, 6.8vh, 56px);
+  margin-top: clamp(9px, 1.5vh, 13px);
+  padding: 0 18px;
+  border: 1.5px solid transparent;
+  border-radius: 14px;
+  font-size: clamp(15.5px, 4.4vw, 18px);
+  font-weight: 700;
+  letter-spacing: -.01em;
+  transition: background-color .16s ease, border-color .16s ease,
+    color .16s ease, transform .16s cubic-bezier(.2, .8, .3, 1), opacity .16s ease;
+}
+
+.action__icon { display: block; flex: none; }
+.action__icon svg { width: clamp(18px, 5vw, 21px); height: auto; }
+.action:active { transform: scale(.982); }
+
+.action--primary {
+  background: var(--c-blue-btn);
+  color: var(--ink-inverse);
+  box-shadow: 0 2px 10px rgba(74, 144, 242, .3);
+}
+
+.action--ghost {
+  background: #f6faff;
+  border-color: var(--line);
+  color: var(--c-blue-ink);
+}
+
+/* empty-field nudge (keyframes in base.css) */
+.hash-field.is-nudge { animation: nudge .3s ease; }
+
+/* Start Match: white like the home menu, black only on hover/press. */
+.action--white {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-btn);
+}
+
+/* ── The black state: hover on a mouse, press on a finger ───────────── */
+
+.btn:active, .btn.is-pressed,
+.tile:active, .tile.is-pressed,
+.friend:active, .friend.is-pressed,
+.cta:active, .cta.is-pressed,
+.action:active, .action.is-pressed,
+.send:active, .send.is-pressed,
+.icon-btn:active, .icon-btn.is-pressed {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--ink-inverse);
+}
+
+@media (hover: hover) {
+  .btn:hover,
+  .tile:hover,
+  .friend:hover,
+  .cta:hover,
+  .action:hover,
+  .send:hover,
+  .icon-btn:hover {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--ink-inverse);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .screen { transition: opacity .01s; transform: none; }
+}
+
+/* Shared nudge: "you missed this bit" without a modal. */
+@keyframes nudge {
+  0%, 100% { translate: 0; }
+  25% { translate: -5px; }
+  60% { translate: 4px; }
+}

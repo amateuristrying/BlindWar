@@ -1,0 +1,57 @@
+/* ── Curtain transition ─────────────────────────────────────────────── */
+
+.curtain {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  visibility: hidden;
+  pointer-events: none;
+  /* the shadow has to sit on the parent: a filter on the clipped element
+     itself would be cut away with it, so the white strip would read as
+     nothing at all against a near-white page */
+  filter: drop-shadow(0 0 26px rgba(18, 20, 26, .17));
+}
+
+.curtain.is-active {
+  visibility: visible;
+  pointer-events: auto;   /* swallows taps for the whole transition */
+}
+
+.curtain__panel {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  clip-path: polygon(0% 50%, 0% 50%, 0% 50%, 0% 50%);
+  will-change: clip-path;
+}
+
+.curtain__text {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  margin: 0;
+  padding: .24em 0;
+  transform: translateY(-50%);
+  text-align: center;
+  font-size: clamp(27px, 8.4vw, 46px);
+  font-weight: 830;
+  letter-spacing: -.035em;
+  line-height: 1;
+  color: var(--ink);
+}
+
+/* the mask is what slices the word as it slides out */
+.curtain__mask {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  padding: 0 .04em;
+}
+
+.curtain__word {
+  display: inline-block;
+  will-change: transform;
+}
+
+body.is-transitioning { cursor: progress; }
