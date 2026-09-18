@@ -1,0 +1,5 @@
+# Filenames carry no content hash (there is no build step), so let the
+# browser revalidate instead of serving a stale mix of old JS and new HTML.
+/*
+  Cache-Control: public, max-age=0, must-revalidate
+  X-Content-Type-Options: nosniff
