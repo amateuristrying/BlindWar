@@ -26,6 +26,7 @@ src/styles/search.css Friend Hash screen
 src/styles/match.css  match settings, option chips, glossy colour balls
 src/styles/ready.css  readiness screen
 src/styles/place.css  placement board and Your Defence tray
+src/styles/battle.css the match screen
 src/styles/curtain.css the curtain
 src/js/grids.js       the four drifting corner boards (reusable board SVG)
 src/js/icons.js       inline SVG icons, all drawn with currentColor
@@ -35,6 +36,8 @@ src/js/match.js       match settings: difficulty, time limit, player colour
 src/js/ready.js       readiness screen: two boards, one black line
 src/js/fleet.js       the fleet and the placement rules (pure logic, no DOM)
 src/js/place.js       defence placement: board, inventory, 120s timer
+src/js/engine.js      match rules: shots, turns, mines, progress, victory
+src/js/battle.js      the match screen: two battlefields, cannons, clocks
 src/js/curtain.js     the white strip-to-cover page curtain
 src/js/main.js        screen router, press feedback, actions
 ```
@@ -51,6 +54,7 @@ src/js/main.js        screen router, press feedback, actions
 - `match` — match settings (tap a friend's row in the friend list)
 - `ready` — player readiness, entered through the curtain from Start Match
 - `place` — defence placement, entered through a 3-2-1 countdown curtain
+- `battle` — the match itself, entered by pulling back from your own board
 
 Routing is `history`-based, so the phone's back gesture works. Screens are
 re-rendered on entry, so a friend added on the search screen is already in
@@ -107,6 +111,37 @@ so a drag off them doesn't pan the page, and the unit icons are sprite
 symbols referenced with `<use>` rather than inline SVG — a board and tray
 hold 40 of them, and re-parsing that markup on every repaint made icons
 arrive late or not at all.
+
+## The match
+
+[engine.js](src/js/engine.js) is the rules, with no DOM, so it can be played
+from node. Each side owns its fleet and the shots that have landed on it,
+which makes the attacker's progress simply how much of the other side has
+been uncovered.
+
+- **Miss** — the square is marked and the turn passes.
+- **Hit** — the tile burns, the attacker's Defences Destroyed goes up, and
+  they shoot again. When every tile of a unit is found it stops burning and
+  is revealed for what it was, and the owner's fleet strip strikes it off.
+- **Mine** — revealed permanently, never counted as defence progress, and
+  the attacker forfeits their *next* turn: the other player takes a turn,
+  then goes again while the forfeited one is consumed.
+- **Win** at 22/22. **Flawless** if no mine was ever triggered.
+
+Timers count down only on the active player's turn; "No Time Limit" shows no
+clock. Running out ends that turn.
+
+The screen ([battle.js](src/js/battle.js)) lays both battlefields out with
+the cannons between them. Tapping a square swings the firing cannon onto it
+and sends a shot before the result lands. The far side is rotated 180°: it
+belongs to the player sitting across from you, so it reads the right way up
+for them.
+
+Neither board ever draws its owner's fleet — only what has been found — so
+one device can hold both players without leaking placements.
+
+The opponent is a stand-in until there is a backend: `chooseShot()` finishes
+whatever unit it has wounded before searching fresh squares.
 
 ## Placeholder behaviour (no backend yet)
 

@@ -4,6 +4,7 @@ import { renderSearch } from './search.js';
 import { renderMatch, setOpponent } from './match.js';
 import { renderReady } from './ready.js';
 import { renderPlace } from './place.js';
+import { renderBattle, stopBattle } from './battle.js';
 import { curtain } from './curtain.js';
 
 renderGridField(document.getElementById('gridField'));
@@ -16,6 +17,7 @@ const RENDER = {
   match: renderMatch,
   ready: renderReady,
   place: renderPlace,
+  battle: renderBattle,
 };
 
 /* ── Screen routing ─────────────────────────────────────────────────── */
@@ -40,6 +42,14 @@ function show(id, { push = true } = {}) {
 
 history.replaceState({ screen: 'home' }, '');
 addEventListener('popstate', (e) => show(e.state?.screen ?? 'home', { push: false }));
+
+/* Fleet locked: the pieces fade, then the view pulls back to both boards. */
+document.addEventListener('blindwar:fleet-ready', () => {
+  setTimeout(() => show('battle'), 620);
+});
+
+/* Leaving the match must stop its clock and its opponent. */
+addEventListener('popstate', () => { if (current !== 'battle') stopBattle(); });
 
 /* ── Press feedback ─────────────────────────────────────────────────────
    :active alone can flash by too fast to see on a quick tap, so hold the

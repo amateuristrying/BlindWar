@@ -281,6 +281,9 @@ export function renderPlace(host) {
     actions.innerHTML = `
       <span class="badge badge--done">${checkIcon()}<span>${auto ? 'Fleet placed for you' : 'Fleet Ready'}</span></span>`;
 
+    /* the fleet goes back under wraps before the view pulls out */
+    host.querySelector('.place').classList.add('is-sealed');
+
     document.dispatchEvent(new CustomEvent('blindwar:fleet-ready', {
       detail: {
         auto,

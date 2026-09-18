@@ -185,3 +185,30 @@ export const spriteMarkup = () =>
 export const useIcon = (id, cls = '') =>
   `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#${id}" /></svg>`;
 
+
+/* ── Battle marks ───────────────────────────────────────────────────── */
+
+export const crossIcon = () =>
+  svg(
+    '0 0 24 24',
+    '<path d="M6.4 6.4 17.6 17.6M17.6 6.4 6.4 17.6" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" />'
+  );
+
+export const flameIcon = () =>
+  svg(
+    '0 0 24 24',
+    '<path d="M13.4 2.3c.6 3-1 4.6-2.6 6.1-1.7 1.6-3.4 3.2-3.4 6.2A6.6 6.6 0 0 0 14 21.3a6.6 6.6 0 0 0 5.4-6.6c0-4.3-3-6.6-4.1-9.2-.4-1-.8-2-1.9-3.2Z" fill="currentColor" />' +
+      '<path d="M11.6 21a3.3 3.3 0 0 1-1.4-2.8c0-2 2.2-2.8 2.2-4.8 1 .9 2.4 2.3 2.4 4.4A3.4 3.4 0 0 1 13 21Z" fill="#fff" fill-opacity=".55" />'
+  );
+
+/** A plain cannon: the barrel group is what gets aimed. */
+export const cannonMarkup = () => `
+  <svg class="cannon__art" viewBox="0 0 96 70" aria-hidden="true" focusable="false">
+    <g class="cannon__barrel">
+      <rect x="30" y="33" width="54" height="17" rx="8.5" fill="currentColor" />
+      <rect x="76" y="30" width="9" height="23" rx="4.5" fill="currentColor" />
+    </g>
+    <circle cx="32" cy="45" r="15" fill="currentColor" />
+    <circle cx="32" cy="45" r="6" fill="#fff" fill-opacity=".38" />
+    <rect x="8" y="56" width="58" height="10" rx="5" fill="currentColor" />
+  </svg>`;
