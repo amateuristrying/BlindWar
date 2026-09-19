@@ -2,6 +2,8 @@ import {
   duoIcon, searchIcon, copyIcon, planeIcon, checkIcon, infoIcon, arrowLeftIcon,
 } from './icons.js';
 import { FRIENDS } from './modes.js';
+import { helpButton } from './help.js';
+import { feel } from './feel.js';
 
 /* ── Stand-in for a real lookup ───────────────────────────────────────
    Any hash finds someone. The name is derived from the digits, so the
@@ -97,6 +99,7 @@ export function renderSearch(host) {
     <button class="icon-btn" type="button" data-action="back" aria-label="Back">
       ${arrowLeftIcon()}
     </button>
+    ${helpButton('hash', 'corner', 'About Friend Hash')}
 
     <div class="screen__inner">
       <header class="brand brand--compact">
@@ -165,6 +168,7 @@ export function renderSearch(host) {
 
     /* nothing typed yet: point at the field rather than going dead */
     if (!v) {
+      feel('invalid');
       input.focus();
       field.classList.remove('is-nudge');
       requestAnimationFrame(() => field.classList.add('is-nudge'));
@@ -175,9 +179,11 @@ export function renderSearch(host) {
     const known = FRIENDS.some((f) => f.hash === `#${v}`);
     result.innerHTML = resultRow(v, name, known ? 'existing' : 'new');
     result.hidden = false;
+    feel('found');
 
     result.querySelector('.send')?.addEventListener('click', () => {
       FRIENDS.push({ name, hash: `#${v}` });
+      feel('send');
       result.innerHTML = resultRow(v, name, 'added');
     });
   };
@@ -185,6 +191,7 @@ export function renderSearch(host) {
   findBtn.addEventListener('click', findFriend);
 
   copyBtn.addEventListener('click', async () => {
+    feel('copy');
     const ok = await copyText(`#${myHash()}`);
     copyLabel.textContent = ok ? 'Copied!' : `#${myHash()}`;
     setTimeout(() => { copyLabel.textContent = 'Copy My Hash'; }, 1800);

@@ -93,6 +93,9 @@ button {
 
 svg { display: block; }
 
+/* the icon sprite: referenced by <use>, never displayed itself */
+.sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+
 /* any class that sets `display` would otherwise beat the UA's [hidden] rule */
 [hidden] { display: none !important; }
 
@@ -291,6 +294,8 @@ svg { display: block; }
 .cta:active, .cta.is-pressed,
 .action:active, .action.is-pressed,
 .send:active, .send.is-pressed,
+.help-btn:active, .help-btn.is-pressed,
+.duel__btn:active, .duel__btn.is-pressed,
 .icon-btn:active, .icon-btn.is-pressed {
   background: var(--ink);
   border-color: var(--ink);
@@ -304,6 +309,8 @@ svg { display: block; }
   .cta:hover,
   .action:hover,
   .send:hover,
+  .help-btn:hover,
+  .duel__btn:hover,
   .icon-btn:hover {
     background: var(--ink);
     border-color: var(--ink);

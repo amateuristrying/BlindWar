@@ -27,6 +27,7 @@ src/styles/match.css  match settings, option chips, glossy colour balls
 src/styles/ready.css  readiness screen
 src/styles/place.css  placement board and Your Defence tray
 src/styles/battle.css the match screen
+src/styles/sheet.css  bottom sheet, "?" buttons, settings switches
 src/styles/curtain.css the curtain
 src/js/grids.js       the four drifting corner boards (reusable board SVG)
 src/js/icons.js       inline SVG icons, all drawn with currentColor
@@ -38,6 +39,12 @@ src/js/fleet.js       the fleet and the placement rules (pure logic, no DOM)
 src/js/place.js       defence placement: board, inventory, 120s timer
 src/js/engine.js      match rules: shots, turns, mines, progress, victory
 src/js/battle.js      the match screen: two battlefields, cannons, clocks
+src/js/sound.js       every sound, synthesised with Web Audio (no files)
+src/js/haptics.js     vibration patterns, with an iPhone fallback
+src/js/feel.js        feel('hit') = the sound and the vibration together
+src/js/prefs.js       Sound / Vibration switches, remembered on the device
+src/js/help.js        the "?" topics — also the game's rulebook
+src/js/sheet.js       the bottom sheet for help and Settings
 src/js/curtain.js     the white strip-to-cover page curtain
 src/js/main.js        screen router, press feedback, actions
 ```
@@ -142,6 +149,30 @@ one device can hold both players without leaking placements.
 
 The opponent is a stand-in until there is a backend: `chooseShot()` finishes
 whatever unit it has wounded before searching fresh squares.
+
+## Sound, vibration and help
+
+**Sound.** [sound.js](src/js/sound.js) synthesises everything with Web Audio —
+oscillators and filtered noise, no audio files — so it adds nothing to load
+and works offline. The context is created on the first tap, as browsers
+require. Each hit in a row climbs a whole tone, so a streak *sounds* like
+one. On iPhone the ringer switch silences Web Audio.
+
+**Vibration.** [haptics.js](src/js/haptics.js) has a pattern per moment: a
+single pulse to fire, a double on a hit, a long rumble on a mine. Android
+plays all of them. iPhone Safari has no Vibration API; on iOS 18+ toggling a
+hidden `<input switch>` gives one light system tap, which is the most the web
+can do there — only one tap per event, and only during a tap the player just
+made, so the opponent's shots can't be felt.
+
+Both are switched in Settings and remembered on the device.
+
+**Help.** Every screen has a "?" in the corner (or in the duel band during a
+match), and the key sections have their own small one — difficulty, time,
+colour, the fleet, Defences Destroyed. The topics in
+[help.js](src/js/help.js) double as the rulebook, and the home screen's
+Rules button opens the full one. Opening help or Settings pauses the match
+clock and the opponent, and the placement timer.
 
 ## Placeholder behaviour (no backend yet)
 

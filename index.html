@@ -20,6 +20,7 @@
   <link rel="stylesheet" href="./src/styles/place.css" />
   <link rel="stylesheet" href="./src/styles/battle.css" />
   <link rel="stylesheet" href="./src/styles/curtain.css" />
+  <link rel="stylesheet" href="./src/styles/sheet.css" />
 </head>
 <body>
   <div class="app">
@@ -30,6 +31,7 @@
     </div>
 
     <main class="screen screen--home is-active" id="screen-home">
+      <button class="help-btn help-btn--corner" type="button" data-help="game" aria-label="How to play">?</button>
       <header class="brand">
         <h1 class="brand__title">BlindWar</h1>
         <p class="brand__tagline">
@@ -84,6 +86,18 @@
     <div class="curtain__panel">
       <p class="curtain__text"><span class="curtain__mask"><span class="curtain__word">BlindWar</span></span></p>
     </div>
+  </div>
+
+  <div class="sheet" id="sheet" hidden>
+    <div class="sheet__scrim" data-sheet-close></div>
+    <section class="sheet__panel" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+      <span class="sheet__grip" aria-hidden="true"></span>
+      <header class="sheet__head">
+        <h2 class="sheet__title" id="sheetTitle"></h2>
+        <button class="sheet__close" type="button" data-sheet-close aria-label="Close">&times;</button>
+      </header>
+      <div class="sheet__body"></div>
+    </section>
   </div>
 
   <script type="module" src="./src/js/main.js"></script>

@@ -6,8 +6,14 @@ import { renderReady } from './ready.js';
 import { renderPlace } from './place.js';
 import { renderBattle, stopBattle } from './battle.js';
 import { curtain } from './curtain.js';
+import { spriteMarkup } from './icons.js';
+import { openHelp, openSettings, closeSheet } from './sheet.js';
+import { feel } from './feel.js';
 
 renderGridField(document.getElementById('gridField'));
+
+/* One icon sprite for every screen and every help sheet. */
+document.body.insertAdjacentHTML('afterbegin', spriteMarkup());
 
 /* Screens are rebuilt on entry, so they always show current data
    (a friend added on the search screen shows up in the friend list). */
@@ -31,6 +37,7 @@ function show(id, { push = true } = {}) {
   const next = screens.get(id);
   if (!next || id === current) return;
 
+  closeSheet();
   RENDER[id]?.(next);
   screens.get(current)?.classList.remove('is-active');
   next.classList.add('is-active');
@@ -58,7 +65,7 @@ addEventListener('popstate', () => { if (current !== 'battle') stopBattle(); });
 const PRESS_MS = 180;
 
 document.addEventListener('pointerdown', (e) => {
-  const el = e.target.closest('.btn, .tile, .cta, .action, .send, .friend, .icon-btn');
+  const el = e.target.closest('.btn, .tile, .cta, .action, .send, .friend, .icon-btn, .help-btn, .duel__btn');
   if (!el) return;
   el.classList.add('is-pressed');
   setTimeout(() => el.classList.remove('is-pressed'), PRESS_MS);
@@ -67,15 +74,33 @@ document.addEventListener('pointerdown', (e) => {
 /* ── Actions ────────────────────────────────────────────────────────── */
 
 document.addEventListener('click', (e) => {
+  /* synthetic clicks (tests, the iOS haptic trick) make no noise */
+  const real = e.isTrusted;
+
+  const help = e.target.closest('[data-help]');
+  if (help) {
+    if (real) feel('tap');
+    openHelp(help.dataset.help);
+    return;
+  }
+
+  if (e.target.closest('[data-sheet]')) {
+    if (real) feel('tap');
+    openSettings({ inMatch: current === 'battle' });
+    return;
+  }
+
+  if (e.target.closest('[data-sheet-close]')) {
+    if (real) feel('back');
+    closeSheet();
+    return;
+  }
+
   const el = e.target.closest('[data-action], [data-mode], [data-friend]');
   if (!el) return;
 
-  /* isTrusted keeps Chrome from warning about synthetic clicks */
-  if (e.isTrusted && navigator.vibrate) {
-    try { navigator.vibrate(8); } catch { /* not allowed here */ }
-  }
-
   const { action, mode, friend } = el.dataset;
+  if (real) feel(action === 'back' ? 'back' : 'tap');
 
   if (friend) {
     const match = FRIENDS.find((f) => f.hash === friend);
@@ -94,7 +119,9 @@ document.addEventListener('click', (e) => {
   const route = { start: 'modes', 'search-friends': 'search' }[action];
 
   if (route) show(route);
-  else if (action === 'back') history.back();
+  else if (action === 'back') { closeSheet(); history.back(); }
+  else if (action === 'rules') openHelp('game');
+  else if (action === 'settings') openSettings();
   else console.info(`[blindwar] ${action} — screen not built yet`);
 });
 

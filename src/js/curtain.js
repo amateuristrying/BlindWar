@@ -10,6 +10,8 @@
  * point count stays at four.
  */
 
+import { feel } from './feel.js';
+
 const EASE_WIPE = 'cubic-bezier(.87, 0, .13, 1)';   /* ≈ expo.inOut */
 const EASE_LIFT = 'cubic-bezier(.56, 0, .35, .98)'; /* the demo's "hop" */
 
@@ -61,20 +63,26 @@ export async function curtain(swap, { text = 'BlindWar', countdown = null, zoomF
   const strip = (right) =>
     `polygon(0% ${50 - half}%, ${right}% ${50 - half}%, ${right}% ${50 + half}%, 0% ${50 + half}%)`;
 
+  feel('whoosh');
   play(veil, [{ opacity: 0 }, { opacity: 1 }], { duration: WIPE_MS, easing: 'ease-out' });
   await play(panel, [{ clipPath: strip(0) }, { clipPath: strip(100) }],
     { duration: WIPE_MS, easing: EASE_WIPE });
 
   /* 3 … 2 … 1 in the strip */
+  if (labels.length > 1) feel('tick', Number(labels[0]));
   for (const label of labels.slice(1)) {
     await wait(TICK_MS);
     word.textContent = label;
+    feel('tick', Number(label));
     word.animate(
       [{ transform: 'scale(.55)', opacity: 0 }, { transform: 'scale(1)', opacity: 1 }],
       { duration: 190, easing: 'cubic-bezier(.2, .9, .3, 1)' },
     );
   }
-  if (labels.length > 1) await wait(TICK_MS);
+  if (labels.length > 1) {
+    await wait(TICK_MS);
+    feel('go');
+  }
 
   const zoom = typeof zoomFrom === 'string' ? document.querySelector(zoomFrom) : zoomFrom;
   if (zoom) {

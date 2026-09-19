@@ -20,6 +20,7 @@
   display: flex;
   justify-content: flex-end;
   align-items: center;
+  gap: 8px;
   min-height: 34px;
   flex: none;
 }
@@ -101,8 +102,6 @@
   grid-area: 2 / 2;
   position: relative;
 }
-
-.sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
 
 .board__grid {
   width: 100%;

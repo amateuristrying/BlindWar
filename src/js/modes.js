@@ -1,3 +1,4 @@
+import { helpButton } from './help.js';
 import {
   duoIcon, quadIcon, globeIcon, chevronIcon, arrowLeftIcon, searchIcon,
 } from './icons.js';
@@ -73,7 +74,7 @@ const emptyFriends = () => `
 function friendsPanel(friends) {
   return `
     <div class="friends">
-      <h3 class="friends__title">Your Friends (${friends.length})</h3>
+      <h3 class="friends__title">Your Friends (${friends.length})${helpButton('friends')}</h3>
       <p class="friends__sub">Add friends using their Friend Hash.</p>
       ${friends.length
         ? `<ul class="friends__list">${friends.map(friendRow).join('')}</ul>${searchCta()}`
@@ -100,6 +101,7 @@ export function renderModes(host) {
     <button class="icon-btn" type="button" data-action="back" aria-label="Back">
       ${arrowLeftIcon()}
     </button>
+    ${helpButton('modes', 'corner', 'About game modes')}
 
     <div class="screen__inner">
       <header class="brand brand--compact">

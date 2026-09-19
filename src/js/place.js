@@ -2,9 +2,9 @@ import {
   FLEET, TOTAL_TILES, createBoard, cellsFor, firstFit, place, pieceAt,
   remove, rotate, remaining, isComplete, autoPlace, unitById,
 } from './fleet.js';
-import {
-  spriteMarkup, useIcon, clockIcon, checkIcon, arrowLeftIcon,
-} from './icons.js';
+import { useIcon, clockIcon, checkIcon, arrowLeftIcon } from './icons.js';
+import { helpButton } from './help.js';
+import { feel } from './feel.js';
 import { settings, DIFFICULTIES, COLOURS } from './match.js';
 import { myHash, nameForHash } from './search.js';
 
@@ -60,14 +60,13 @@ export function renderPlace(host) {
     </div>`).join('');
 
   host.innerHTML = `
-    ${spriteMarkup()}
-
     <button class="icon-btn" type="button" data-action="back" aria-label="Leave match">
       ${arrowLeftIcon()}
     </button>
 
     <div class="place" style="--tone: var(--ball-${colour.id})">
       <div class="place__bar">
+        ${helpButton('placement', 'chip', 'How to place your fleet')}
         <span class="timer">${clockIcon()}<b class="timer__value">${mmss(left)}</b></span>
       </div>
 
@@ -89,7 +88,7 @@ export function renderPlace(host) {
       <p class="who"><i class="who__dot"></i><span>${esc(me)}</span></p>
 
       <aside class="tray">
-        <h2 class="tray__title">Your Defence</h2>
+        <h2 class="tray__title">Your Defence${helpButton('fleet', 'inline', 'About your defence')}</h2>
         <div class="tray__units">${FLEET.map(unitCard).join('')}</div>
       </aside>
 
@@ -194,11 +193,13 @@ export function renderPlace(host) {
     if (locked) return;
     const card = cards.find((c) => c.dataset.unit === id);
     if (remaining(board, id) <= 0) {
+      feel('invalid');
       card.classList.remove('is-nudge');
       requestAnimationFrame(() => card.classList.add('is-nudge'));
       return;
     }
     held = held === id ? null : id;
+    feel(held ? 'select' : 'back');
     clearPreview();
     paint();
   }
@@ -208,10 +209,12 @@ export function renderPlace(host) {
   function tryPlace(row, col) {
     const orient = firstFit(board, held, row, col);
     if (!orient) {
+      feel('invalid');
       reject(cellsFor(row, col, unitById(held).length, 'h'));
       return;
     }
     place(board, held, row, col, orient);
+    feel('place');
     if (remaining(board, held) <= 0) held = null;
     clearPreview();
     paint();
@@ -249,6 +252,7 @@ export function renderPlace(host) {
 
     const piece = pieceAt(board, row, col);   /* tap a placed unit to lift it */
     if (piece) {
+      feel('lift');
       remove(board, piece.id);
       held = piece.unit;
       paint();
@@ -262,7 +266,10 @@ export function renderPlace(host) {
 
     const piece = board.pieces.find((p) => p.id === +btn.dataset.rot);
     const anchor = piece?.cells[0];
-    if (!rotate(board, +btn.dataset.rot, +btn.dataset.dir) && anchor) {
+    if (rotate(board, +btn.dataset.rot, +btn.dataset.dir)) {
+      feel('rotate');
+    } else if (anchor) {
+      feel('invalid');
       reject(pieceAt(board, anchor[0], anchor[1])?.cells ?? []);
     }
     paint();
@@ -274,6 +281,7 @@ export function renderPlace(host) {
     if (locked) return;
     locked = true;
     clearInterval(ticker);
+    feel('ready');
     held = null;
     clearPreview();
     paint();
@@ -298,9 +306,15 @@ export function renderPlace(host) {
 
   on(doneBtn, 'click', () => finish(false));
 
+  /* reading the rules shouldn't cost you placement time */
+  let paused = false;
+  on(document, 'blindwar:sheet', (e) => { paused = e.detail.open; });
+
   ticker = setInterval(() => {
     if (token !== renderToken) { clearInterval(ticker); return; }
+    if (paused || locked) return;
     left -= 1;
+    if (left > 0 && left <= 10) feel('lowTime');
     timerValue.textContent = mmss(Math.max(left, 0));
     timerChip.classList.toggle('is-low', left <= 20);
 

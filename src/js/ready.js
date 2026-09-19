@@ -2,6 +2,8 @@ import { buildBoardSvg } from './grids.js';
 import { getOpponent, settings, COLOURS, DIFFICULTIES, TIME_LIMITS } from './match.js';
 import { myHash, nameForHash, hashSeed } from './search.js';
 import { checkIcon } from './icons.js';
+import { helpButton } from './help.js';
+import { feel } from './feel.js';
 
 /** How long the rival takes to appear. Stands in for matchmaking. */
 const JOIN_MS = 5000;
@@ -62,6 +64,7 @@ export function renderReady(host) {
   const time = TIME_LIMITS.find((t) => t.id === settings.time) ?? TIME_LIMITS[1];
 
   host.innerHTML = `
+    ${helpButton('ready', 'corner', 'About getting ready')}
     <button class="icon-btn" type="button" data-action="back" aria-label="Leave match">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -114,6 +117,7 @@ export function renderReady(host) {
     if (token !== renderToken) return;
     if (!host.classList.contains('is-active')) return;   /* player left */
 
+    feel('join');
     joining.hidden = true;
     arrive.hidden = false;
     arrive.classList.add('is-arriving');                 /* slides in from their side */
@@ -136,6 +140,7 @@ export function renderReady(host) {
   startWait();
 
   readyBtn.addEventListener('click', () => {
+    feel('ready');
     readyBtn.outerHTML = readyBadge(myColour.id, "You're Ready");
     document.dispatchEvent(new CustomEvent('blindwar:ready', {
       detail: { you: mine, rival, ...settings },

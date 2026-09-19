@@ -1,6 +1,8 @@
 import {
   gridIcon, clockIcon, paletteIcon, infinityIcon, playIcon, arrowLeftIcon,
 } from './icons.js';
+import { helpButton } from './help.js';
+import { feel } from './feel.js';
 
 /* ── Options ────────────────────────────────────────────────────────── */
 
@@ -35,12 +37,12 @@ export const getOpponent = () => opponent;
 const esc = (v) =>
   String(v).replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
 
-const section = (n, icon, title, sub, body) => `
+const section = (n, icon, title, sub, body, topic) => `
   <section class="card">
     <div class="card__head">
       <span class="card__icon card__icon--ink">${icon()}</span>
       <div class="card__text">
-        <h2 class="card__title">${n}. ${title}</h2>
+        <h2 class="card__title">${n}. ${title}${helpButton(topic)}</h2>
         <p class="card__sub">${sub}</p>
       </div>
     </div>
@@ -89,6 +91,7 @@ export function renderMatch(host) {
     <button class="icon-btn" type="button" data-action="back" aria-label="Back">
       ${arrowLeftIcon()}
     </button>
+    ${helpButton('settings', 'corner', 'About match settings')}
 
     <div class="screen__inner">
       <header class="brand brand--mini">
@@ -116,9 +119,9 @@ export function renderMatch(host) {
           </div>` : ''}
 
         <div class="cards" role="group" aria-label="Match settings">
-          ${section(1, gridIcon, 'Select Difficulty', 'Choose the size of the battlefield.', difficultyOpts())}
-          ${section(2, clockIcon, 'Select Time Limit', 'Choose how much time you have.', timeOpts())}
-          ${section(3, paletteIcon, 'Choose Your Colour', 'Pick a colour to represent you in this match.', colourOpts())}
+          ${section(1, gridIcon, 'Select Difficulty', 'Choose the size of the battlefield.', difficultyOpts(), 'difficulty')}
+          ${section(2, clockIcon, 'Select Time Limit', 'Choose how much time you have.', timeOpts(), 'time')}
+          ${section(3, paletteIcon, 'Choose Your Colour', 'Pick a colour to represent you in this match.', colourOpts(), 'colour')}
         </div>
 
         <button class="action action--white action--lg" type="button" data-start-match>
@@ -134,6 +137,7 @@ export function renderMatch(host) {
     host.querySelectorAll(`[data-${attr}]`).forEach((btn) => {
       btn.addEventListener('click', () => {
         settings[key] = btn.dataset[key === 'colour' ? 'colour' : key];
+        feel('select');
         const group = btn.parentElement;
         group.querySelectorAll('[role="radio"]').forEach((el) => {
           const on = el === btn;
@@ -151,6 +155,7 @@ export function renderMatch(host) {
   host.querySelector('[data-start-match]').addEventListener('click', () => {
     /* a colour is the one thing with no sensible default */
     if (!settings.colour) {
+      feel('invalid');
       const card = host.querySelectorAll('.card')[2];
       card.classList.remove('is-nudge');
       requestAnimationFrame(() => card.classList.add('is-nudge'));
